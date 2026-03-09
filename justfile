@@ -7,3 +7,7 @@ configure buildDir = buildDir:
 alias b := build
 build buildDir = buildDir:
   cmake --build {{buildDir}} --clean-first
+
+run buildDir = buildDir:
+  cmake --build {{buildDir}}
+  ./{{buildDir}}/pot
