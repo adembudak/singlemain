@@ -7,8 +7,7 @@
 #include <stb_image.h>
 
 int main(int argc, const char* argv[]) {
-  /* Initialize the library */
-  if(!glfwInit())
+  if(int ret = glfwInit(); ret != GLFW_TRUE)
     return -1;
 
   glfwWindowHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
@@ -17,15 +16,16 @@ int main(int argc, const char* argv[]) {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
-  GLFWwindow* window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
-  if(!window) {
+  GLFWwindow* window = glfwCreateWindow(640, 480, "pot", NULL, NULL);
+  if(window == nullptr) {
     glfwTerminate();
     return -1;
   }
 
-  /* Make the window's context current */
   glfwMakeContextCurrent(window);
-  glewInit();
+
+  if(GLenum err = glewInit(); err != GLEW_OK)
+    return -1;
 
   /*
     glfwSetWindowSizeCallback(window, glfw_onResize);
