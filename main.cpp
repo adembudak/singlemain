@@ -12,6 +12,10 @@ void GLAPIENTRY GLErrorMessageCallback(GLenum source, GLenum type, GLuint id, GL
   std::cout << message << '\n';
 }
 
+void glfw_error_callback(int error, const char* description) {
+  std::cout << description << '\n';
+}
+
 int main(int argc, const char* argv[]) {
   if(int ret = glfwInit(); ret != GLFW_TRUE)
     return -1;
@@ -37,6 +41,9 @@ int main(int argc, const char* argv[]) {
   glEnable(GL_DEBUG_OUTPUT);
   glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
   glDebugMessageCallback(GLErrorMessageCallback, nullptr);
+
+  glfwSetErrorCallback(glfw_error_callback);
+
   /*
     glfwSetWindowSizeCallback(window, glfw_onResize);
     glfwSetKeyCallback(window, glfw_onKey);
