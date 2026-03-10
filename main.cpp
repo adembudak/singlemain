@@ -6,6 +6,12 @@
 #include <imgui_impl_glfw.h>
 #include <stb_image.h>
 
+#include <iostream>
+
+void GLAPIENTRY GLErrorMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
+  std::cout << message << '\n';
+}
+
 int main(int argc, const char* argv[]) {
   if(int ret = glfwInit(); ret != GLFW_TRUE)
     return -1;
@@ -15,6 +21,7 @@ int main(int argc, const char* argv[]) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
 
   GLFWwindow* window = glfwCreateWindow(640, 480, "pot", NULL, NULL);
   if(window == nullptr) {
@@ -27,6 +34,9 @@ int main(int argc, const char* argv[]) {
   if(GLenum err = glewInit(); err != GLEW_OK)
     return -1;
 
+  glEnable(GL_DEBUG_OUTPUT);
+  glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+  glDebugMessageCallback(GLErrorMessageCallback, nullptr);
   /*
     glfwSetWindowSizeCallback(window, glfw_onResize);
     glfwSetKeyCallback(window, glfw_onKey);
