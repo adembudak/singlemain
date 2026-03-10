@@ -6,6 +6,7 @@
 #include <imgui_impl_glfw.h>
 #include <stb_image.h>
 
+#include <cassert>
 #include <iostream>
 
 void GLAPIENTRY GLErrorMessageCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam) {
@@ -15,6 +16,13 @@ void GLAPIENTRY GLErrorMessageCallback(GLenum source, GLenum type, GLuint id, GL
 void glfw_error_callback(int error, const char* description) {
   std::cout << description << '\n';
 }
+
+struct vec2 {
+  float x, y;
+  static constexpr std::size_t count = 2;
+};
+
+static_assert(sizeof(vec2) == 2 * sizeof(float));
 
 int main(int argc, const char* argv[]) {
   if(int ret = glfwInit(); ret != GLFW_TRUE)
@@ -52,17 +60,85 @@ int main(int argc, const char* argv[]) {
     glfwSetScrollCallback(window, glfw_onMouseWheel);
   */
 
-  /* Loop until the user closes the window */
+  const char* vertex_shader = R"(
+#version 460 core
+
+in vec2 vertexPosition;
+
+void main() {
+  gl_Position = vec4(vertexPosition, 0.0, 1.0);
+}
+
+)";
+
+  const char* fragment_shader = R"(
+#version 460 core
+
+out vec4 fragmentColor;
+
+void main() {
+  fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+}
+
+)";
+
+  GLuint vertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertexShaderID, 1, &vertex_shader, nullptr);
+  glCompileShader(vertexShaderID);
+
+  GLuint fragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragmentShaderID, 1, &fragment_shader, nullptr);
+  glCompileShader(fragmentShaderID);
+
+  GLuint programID = glCreateProgram();
+
+  glAttachShader(programID, vertexShaderID);
+  glAttachShader(programID, fragmentShaderID);
+
+  glLinkProgram(programID);
+
+  glDetachShader(programID, vertexShaderID);
+  glDetachShader(programID, fragmentShaderID);
+
+  glUseProgram(programID);
+
+  // assert(glGetError() == GL_NO_ERROR);
+
+  GLuint vertexAttributeArrayID;
+  glCreateVertexArrays(1, &vertexAttributeArrayID);
+  glBindVertexArray(vertexAttributeArrayID);
+
+  GLuint vertexPositionArrayID;
+  glCreateBuffers(1, &vertexPositionArrayID);
+  glBindBuffer(GL_ARRAY_BUFFER, vertexPositionArrayID);
+
+  // clang-format off
+  const vec2 positionData[] = { {-1.0f, -1.0f}, {0.0f,  1.0f }, {1.0f,  -1.0f} };
+  // clang-format on
+
+  GLint vertexAttributePositionLocation = glGetAttribLocation(programID, "vertexPosition");
+  glNamedBufferStorage(vertexPositionArrayID, std::size(positionData) * sizeof(decltype(positionData[0])), positionData, GL_MAP_READ_BIT);
+
+  glVertexArrayVertexBuffer(vertexAttributeArrayID, vertexAttributePositionLocation, vertexPositionArrayID, 0, sizeof(vec2));
+  glVertexArrayAttribFormat(vertexAttributeArrayID, vertexAttributePositionLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
+  glVertexArrayAttribBinding(vertexAttributeArrayID, vertexAttributePositionLocation, vertexAttributePositionLocation);
+  glEnableVertexArrayAttrib(vertexAttributeArrayID, vertexAttributePositionLocation);
+
   while(!glfwWindowShouldClose(window)) {
-    /* Render here */
     glClear(GL_COLOR_BUFFER_BIT);
 
-    /* Swap front and back buffers */
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
     glfwSwapBuffers(window);
 
-    /* Poll for and process events */
     glfwPollEvents();
   }
+
+  glDeleteBuffers(1, &vertexPositionArrayID);
+  glDeleteVertexArrays(1, &vertexAttributeArrayID);
+  glDeleteShader(fragmentShaderID);
+  glDeleteShader(vertexShaderID);
+  glDeleteProgram(programID);
 
   glfwTerminate();
   return 0;
