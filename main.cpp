@@ -136,8 +136,7 @@ void main() {
   glBindTexture(GL_TEXTURE_2D, textureID);
 
   int width, height, nComponents;
-  stbi_uc* image_data = stbi_load("/home/adem/singlemain/wood.jpg", &width, &height, &nComponents, 0);
-  std::cout << width << ' ' << height << ' ' << nComponents << '\n';
+  stbi_uc* image_data = stbi_load("resources/textures/wood.jpg", &width, &height, &nComponents, 0);
   assert(image_data != nullptr);
 
   glTextureStorage2D(textureID, 1, GL_SRGB8, width, height);
