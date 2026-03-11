@@ -65,15 +65,15 @@ int main(int argc, const char* argv[]) {
   const char* vertex_shader = R"(
 #version 460 core
 
-in vec2 vertexPosition;
-in vec2 textureCoordinate_;
+in vec2 in_vertexPosition;
+in vec2 in_textureCoordinate;
 
 
 out vec2 textureCoordinate;
 
 void main() {
-  textureCoordinate = textureCoordinate_;
-  gl_Position = vec4(vertexPosition, 0.0, 1.0);
+  textureCoordinate = in_textureCoordinate;
+  gl_Position = vec4(in_vertexPosition, 0.0, 1.0);
 }
 
 )";
@@ -124,7 +124,7 @@ void main() {
   const vec2 positionData[] = { {-1.0f, -1.0f}, {0.0f,  1.0f }, {1.0f,  -1.0f} };
   // clang-format on
 
-  GLint vertexAttributePositionLocation = glGetAttribLocation(programID, "vertexPosition");
+  GLint vertexAttributePositionLocation = glGetAttribLocation(programID, "in_vertexPosition");
   glNamedBufferStorage(vertexPositionArrayID, std::size(positionData) * sizeof(decltype(positionData[0])), positionData, GL_MAP_READ_BIT);
   glVertexArrayVertexBuffer(vertexAttributeArrayID, vertexAttributePositionLocation, vertexPositionArrayID, 0, sizeof(vec2));
   glVertexArrayAttribFormat(vertexAttributeArrayID, vertexAttributePositionLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
@@ -150,7 +150,7 @@ void main() {
   const vec2 textureUVData[3]{ vec2{0.0, 0.0}, vec2{0.5, 1.0}, vec2{1.0, 0.0} };
   // clang-format on
 
-  GLint textureCoordinateLocation = glGetAttribLocation(programID, "textureCoordinate_");
+  GLint textureCoordinateLocation = glGetAttribLocation(programID, "in_textureCoordinate");
   glNamedBufferStorage(textureCoordinatesID, std::size(textureUVData) * sizeof(decltype(textureUVData[0])), std::data(textureUVData), GL_MAP_READ_BIT);
   glVertexArrayVertexBuffer(vertexAttributeArrayID, textureCoordinateLocation, textureCoordinatesID, 0, sizeof(vec2));
   glVertexArrayAttribFormat(vertexAttributeArrayID, textureCoordinateLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
