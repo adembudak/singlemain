@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
+
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
 #include <cassert>
@@ -64,8 +66,13 @@ int main(int argc, const char* argv[]) {
 #version 460 core
 
 in vec2 vertexPosition;
+in vec2 textureCoordinate_;
+
+
+out vec2 textureCoordinate;
 
 void main() {
+  textureCoordinate = textureCoordinate_;
   gl_Position = vec4(vertexPosition, 0.0, 1.0);
 }
 
@@ -74,10 +81,13 @@ void main() {
   const char* fragment_shader = R"(
 #version 460 core
 
+uniform sampler2D sampler;
+
+in vec2 textureCoordinate;
 out vec4 fragmentColor;
 
 void main() {
-  fragmentColor = vec4(1.0, 1.0, 1.0, 1.0);
+  fragmentColor = texture(sampler, textureCoordinate);
 }
 
 )";
@@ -102,8 +112,6 @@ void main() {
 
   glUseProgram(programID);
 
-  // assert(glGetError() == GL_NO_ERROR);
-
   GLuint vertexAttributeArrayID;
   glCreateVertexArrays(1, &vertexAttributeArrayID);
   glBindVertexArray(vertexAttributeArrayID);
@@ -118,11 +126,40 @@ void main() {
 
   GLint vertexAttributePositionLocation = glGetAttribLocation(programID, "vertexPosition");
   glNamedBufferStorage(vertexPositionArrayID, std::size(positionData) * sizeof(decltype(positionData[0])), positionData, GL_MAP_READ_BIT);
-
   glVertexArrayVertexBuffer(vertexAttributeArrayID, vertexAttributePositionLocation, vertexPositionArrayID, 0, sizeof(vec2));
   glVertexArrayAttribFormat(vertexAttributeArrayID, vertexAttributePositionLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
   glVertexArrayAttribBinding(vertexAttributeArrayID, vertexAttributePositionLocation, vertexAttributePositionLocation);
   glEnableVertexArrayAttrib(vertexAttributeArrayID, vertexAttributePositionLocation);
+
+  GLuint textureID;
+  glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
+  glBindTexture(GL_TEXTURE_2D, textureID);
+
+  int width, height, nComponents;
+  stbi_uc* image_data = stbi_load("/home/adem/singlemain/wood.jpg", &width, &height, &nComponents, 0);
+  std::cout << width << ' ' << height << ' ' << nComponents << '\n';
+  assert(image_data != nullptr);
+
+  glTextureStorage2D(textureID, 1, GL_SRGB8, width, height);
+  glTextureSubImage2D(textureID, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image_data);
+  glBindTextureUnit(glGetUniformLocation(programID, "sampler"), textureID);
+
+  GLuint textureCoordinatesID;
+  glCreateBuffers(1, &textureCoordinatesID);
+  glBindBuffer(GL_ARRAY_BUFFER, textureCoordinatesID);
+  // clang-format off
+  const vec2 textureUVData[3]{ vec2{0.0, 0.0}, vec2{0.5, 1.0}, vec2{1.0, 0.0} };
+  // clang-format on
+
+  GLint textureCoordinateLocation = glGetAttribLocation(programID, "textureCoordinate_");
+  glNamedBufferStorage(textureCoordinatesID, std::size(textureUVData) * sizeof(decltype(textureUVData[0])), std::data(textureUVData), GL_MAP_READ_BIT);
+  glVertexArrayVertexBuffer(vertexAttributeArrayID, textureCoordinateLocation, textureCoordinatesID, 0, sizeof(vec2));
+  glVertexArrayAttribFormat(vertexAttributeArrayID, textureCoordinateLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
+  glVertexArrayAttribBinding(vertexAttributeArrayID, textureCoordinateLocation, textureCoordinateLocation);
+
+  glEnableVertexArrayAttrib(vertexAttributeArrayID, textureCoordinateLocation);
+
+  assert(glGetError() == GL_NO_ERROR);
 
   while(!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
@@ -134,6 +171,8 @@ void main() {
     glfwPollEvents();
   }
 
+  glDeleteTextures(1, &textureID);
+  glDeleteBuffers(1, &textureCoordinatesID);
   glDeleteBuffers(1, &vertexPositionArrayID);
   glDeleteVertexArrays(1, &vertexAttributeArrayID);
   glDeleteShader(fragmentShaderID);
