@@ -1,5 +1,6 @@
 {
   "dependencies": [
+    "glew",
     {
       "name": "glfw3",
       "features": [
@@ -9,11 +10,11 @@
     {
       "name": "imgui",
       "features": [
-        "glfw-binding"
+        "glfw-binding",
+        "opengl3-binding"
       ]
     },
     "opengl",
-    "stb",
-    "glew"
+    "stb"
   ]
 }
