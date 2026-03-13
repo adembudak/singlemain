@@ -83,13 +83,14 @@ void main() {
   const char* fragment_shader = R"(
 #version 460 core
 
-uniform sampler2D sampler;
+layout(binding = 0) uniform sampler2D sampler0;
+layout(binding = 1) uniform sampler2D sampler1;
 
 in vec2 textureCoordinate;
 out vec4 fragmentColor;
 
 void main() {
-  fragmentColor = texture(sampler, textureCoordinate);
+  fragmentColor = texture(sampler0, textureCoordinate) * texture(sampler1, textureCoordinate);
 }
 
 )";
@@ -136,17 +137,26 @@ void main() {
   glVertexArrayAttribBinding(vertexAttributeArrayID, vertexAttributePositionLocation, vertexAttributePositionLocation);
   glEnableVertexArrayAttrib(vertexAttributeArrayID, vertexAttributePositionLocation);
 
-  GLuint textureID;
-  glCreateTextures(GL_TEXTURE_2D, 1, &textureID);
-  glBindTexture(GL_TEXTURE_2D, textureID);
+  GLuint woodTextureID;
+  glCreateTextures(GL_TEXTURE_2D, 1, &woodTextureID);
+  glBindTexture(GL_TEXTURE_2D, woodTextureID);
 
   int width, height, nComponents;
-  stbi_uc* image_data = stbi_load("resources/textures/wood.jpg", &width, &height, &nComponents, 0);
-  assert(image_data != nullptr);
+  stbi_uc* image_data0 = stbi_load("resources/textures/wood.jpg", &width, &height, &nComponents, 0);
+  assert(image_data0 != nullptr);
 
-  glTextureStorage2D(textureID, 1, GL_SRGB8, width, height);
-  glTextureSubImage2D(textureID, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image_data);
-  glBindTextureUnit(glGetUniformLocation(programID, "sampler"), textureID);
+  glTextureStorage2D(woodTextureID, 1, GL_SRGB8, width, height);
+  glTextureSubImage2D(woodTextureID, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image_data0);
+
+  GLuint skyTextureID;
+  glCreateTextures(GL_TEXTURE_2D, 1, &skyTextureID);
+  glBindTexture(GL_TEXTURE_2D, skyTextureID);
+
+  stbi_uc* image_data1 = stbi_load("resources/textures/sky.jpg", &width, &height, &nComponents, 0);
+  assert(image_data1 != nullptr);
+
+  glTextureStorage2D(skyTextureID, 1, GL_SRGB8, width, height);
+  glTextureSubImage2D(skyTextureID, 0, 0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, image_data1);
 
   GLuint textureCoordinatesID;
   glCreateBuffers(1, &textureCoordinatesID);
@@ -171,6 +181,9 @@ void main() {
   while(!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
 
+    glBindTextureUnit(0, woodTextureID);
+    glBindTextureUnit(1, skyTextureID);
+
     glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glfwSwapBuffers(window);
@@ -178,8 +191,10 @@ void main() {
     glfwPollEvents();
   }
 
-  stbi_image_free(image_data);
-  glDeleteTextures(1, &textureID);
+  stbi_image_free(image_data1);
+  stbi_image_free(image_data0);
+  glDeleteTextures(1, &skyTextureID);
+  glDeleteTextures(1, &woodTextureID);
   glDeleteBuffers(1, &textureCoordinatesID);
   glDeleteBuffers(1, &vertexPositionArrayID);
   glDeleteVertexArrays(1, &vertexAttributeArrayID);
