@@ -127,7 +127,10 @@ void main() {
   // clang-format on
 
   GLint vertexAttributePositionLocation = glGetAttribLocation(programID, "in_vertexPosition");
-  glNamedBufferStorage(vertexPositionArrayID, std::size(positionData) * sizeof(decltype(positionData[0])), positionData, GL_MAP_READ_BIT);
+
+  GLuint positionData_in_bytes = std::size(positionData) * sizeof(decltype(positionData[0]));
+  glNamedBufferStorage(vertexPositionArrayID, positionData_in_bytes, std::data(positionData), GL_MAP_READ_BIT);
+
   glVertexArrayVertexBuffer(vertexAttributeArrayID, vertexAttributePositionLocation, vertexPositionArrayID, 0, sizeof(vec2));
   glVertexArrayAttribFormat(vertexAttributeArrayID, vertexAttributePositionLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
   glVertexArrayAttribBinding(vertexAttributeArrayID, vertexAttributePositionLocation, vertexAttributePositionLocation);
@@ -153,7 +156,10 @@ void main() {
   // clang-format on
 
   GLint textureCoordinateLocation = glGetAttribLocation(programID, "in_textureCoordinate");
-  glNamedBufferStorage(textureCoordinatesID, std::size(textureUVData) * sizeof(decltype(textureUVData[0])), std::data(textureUVData), GL_MAP_READ_BIT);
+
+  const std::size_t textureUVData_in_bytes = std::size(textureUVData) * sizeof(decltype(textureUVData[0]));
+  glNamedBufferStorage(textureCoordinatesID, textureUVData_in_bytes, std::data(textureUVData), GL_MAP_READ_BIT);
+
   glVertexArrayVertexBuffer(vertexAttributeArrayID, textureCoordinateLocation, textureCoordinatesID, 0, sizeof(vec2));
   glVertexArrayAttribFormat(vertexAttributeArrayID, textureCoordinateLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
   glVertexArrayAttribBinding(vertexAttributeArrayID, textureCoordinateLocation, textureCoordinateLocation);
@@ -172,6 +178,7 @@ void main() {
     glfwPollEvents();
   }
 
+  stbi_image_free(image_data);
   glDeleteTextures(1, &textureID);
   glDeleteBuffers(1, &textureCoordinatesID);
   glDeleteBuffers(1, &vertexPositionArrayID);
