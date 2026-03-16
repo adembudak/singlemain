@@ -126,7 +126,7 @@ void main() {
   glBindBuffer(GL_ARRAY_BUFFER, vertexPositionArrayID);
 
   // clang-format off
-  const vec2 positionData[] = { {-1.0f, -1.0f}, {0.0f,  1.0f }, {1.0f,  -1.0f} };
+  const vec2 positionData[3] = { {-1.0f, -1.0f}, {0.0f,  1.0f }, {1.0f,  -1.0f} };
   // clang-format on
 
   GLint vertexAttributePositionLocation = glGetAttribLocation(programID, "in_vertexPosition");
@@ -178,6 +178,12 @@ void main() {
 
   glEnableVertexArrayAttrib(vertexAttributeArrayID, textureCoordinateLocation);
 
+  GLuint elementArrayBufferID;
+  glCreateBuffers(1, &elementArrayBufferID);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementArrayBufferID);
+
+  GLuint elementArray[]{0, 1, 2, 3, 4, 5, 6};
+  glNamedBufferStorage(elementArrayBufferID, std::size(elementArray) * sizeof(decltype(elementArray[0])), std::data(elementArray), GL_MAP_READ_BIT);
   assert(glGetError() == GL_NO_ERROR);
 
   while(!glfwWindowShouldClose(window)) {
@@ -186,7 +192,7 @@ void main() {
     glBindTextureUnit(0, woodTextureID);
     glBindTextureUnit(1, skyTextureID);
 
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 
     glfwSwapBuffers(window);
 
