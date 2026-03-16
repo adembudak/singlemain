@@ -37,7 +37,7 @@ int main(int argc, const char* argv[]) {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GL_TRUE);
+  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
   GLFWwindow* window = glfwCreateWindow(640, 480, "pot", NULL, NULL);
   if(window == nullptr) {
@@ -89,8 +89,10 @@ layout(binding = 1) uniform sampler2D sampler1;
 in vec2 textureCoordinate;
 out vec4 fragmentColor;
 
+const vec4 baseColor = vec4(0.796, 0.63, 0.207, 1.0);
+
 void main() {
-  fragmentColor = texture(sampler0, textureCoordinate) * texture(sampler1, textureCoordinate);
+  fragmentColor = texture(sampler0, textureCoordinate) * texture(sampler1, textureCoordinate) * baseColor;
 }
 
 )";
