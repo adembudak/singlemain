@@ -28,6 +28,12 @@ struct vec2 {
 
 static_assert(sizeof(vec2) == 2 * sizeof(float));
 
+struct vec3 {
+  float x, y, z;
+  static constexpr std::size_t count = 3;
+};
+
+
 int main(int argc, const char* argv[]) {
   if(int ret = glfwInit(); ret != GLFW_TRUE)
     return -1;
@@ -67,15 +73,14 @@ int main(int argc, const char* argv[]) {
   const char* vertex_shader = R"(
 #version 460 core
 
-in vec2 in_vertexPosition;
+in vec3 in_vertexPosition;
 in vec2 in_textureCoordinate;
-
 
 out vec2 textureCoordinate;
 
 void main() {
   textureCoordinate = in_textureCoordinate;
-  gl_Position = vec4(in_vertexPosition, 0.0, 1.0);
+  gl_Position = vec4(in_vertexPosition, 1.0);
 }
 
 )";
@@ -126,7 +131,7 @@ void main() {
   glBindBuffer(GL_ARRAY_BUFFER, vertexPositionArrayID);
 
   // clang-format off
-  const vec2 positionData[3] = { vec2{-1.0f, -1.0f}, vec2{0.0f,  1.0f }, vec2{1.0f,  -1.0f} };
+  const vec3 positionData[3] = { vec3{-1.0f, -1.0f, 0.0f}, vec3{0.0f, 1.0f, 0.0f}, vec3{1.0f, -1.0f, 0.0f} };
   // clang-format on
 
   GLint vertexAttributePositionLocation = glGetAttribLocation(programID, "in_vertexPosition");
@@ -135,7 +140,7 @@ void main() {
   glNamedBufferStorage(vertexPositionArrayID, positionData_in_bytes, std::data(positionData), GL_MAP_READ_BIT);
 
   glVertexArrayVertexBuffer(vertexAttributeArrayID, vertexAttributePositionLocation, vertexPositionArrayID, 0, sizeof(decltype(positionData[0])));
-  glVertexArrayAttribFormat(vertexAttributeArrayID, vertexAttributePositionLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
+  glVertexArrayAttribFormat(vertexAttributeArrayID, vertexAttributePositionLocation, vec3::count, GL_FLOAT, GL_FALSE, 0);
   glVertexArrayAttribBinding(vertexAttributeArrayID, vertexAttributePositionLocation, vertexAttributePositionLocation);
   glEnableVertexArrayAttrib(vertexAttributeArrayID, vertexAttributePositionLocation);
 
