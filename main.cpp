@@ -23,16 +23,21 @@ void glfw_error_callback(int error, const char* description) {
 
 struct vec2 {
   float x, y;
-  static constexpr std::size_t count = 2;
+
+  static constexpr std::size_t componentCount = 2;
+  static constexpr std::size_t sizeInBytes = componentCount * sizeof(float);
+  static constexpr GLenum componentType = GL_FLOAT;
 };
 
 static_assert(sizeof(vec2) == 2 * sizeof(float));
 
 struct vec3 {
   float x, y, z;
-  static constexpr std::size_t count = 3;
-};
 
+  static constexpr std::size_t componentCount = 3;
+  static constexpr std::size_t sizeInBytes = componentCount * sizeof(float);
+  static constexpr GLenum componentType = GL_FLOAT;
+};
 
 int main(int argc, const char* argv[]) {
   if(int ret = glfwInit(); ret != GLFW_TRUE)
@@ -136,11 +141,11 @@ void main() {
 
   GLint vertexAttributePositionLocation = glGetAttribLocation(programID, "in_vertexPosition");
 
-  GLuint positionData_in_bytes = std::size(positionData) * sizeof(decltype(positionData[0]));
-  glNamedBufferStorage(vertexPositionArrayID, positionData_in_bytes, std::data(positionData), GL_MAP_READ_BIT);
+  glNamedBufferStorage(vertexPositionArrayID, std::size(positionData) * vec3::sizeInBytes, std::data(positionData), GL_MAP_READ_BIT);
 
-  glVertexArrayVertexBuffer(vertexAttributeArrayID, vertexAttributePositionLocation, vertexPositionArrayID, 0, sizeof(decltype(positionData[0])));
-  glVertexArrayAttribFormat(vertexAttributeArrayID, vertexAttributePositionLocation, vec3::count, GL_FLOAT, GL_FALSE, 0);
+  glVertexArrayVertexBuffer(vertexAttributeArrayID, vertexAttributePositionLocation, vertexPositionArrayID, 0, vec3::sizeInBytes);
+  glVertexArrayAttribFormat(vertexAttributeArrayID, vertexAttributePositionLocation, vec3::componentCount, vec3::componentType, GL_FALSE, 0);
+
   glVertexArrayAttribBinding(vertexAttributeArrayID, vertexAttributePositionLocation, vertexAttributePositionLocation);
   glEnableVertexArrayAttrib(vertexAttributeArrayID, vertexAttributePositionLocation);
 
@@ -174,13 +179,12 @@ void main() {
 
   GLint textureCoordinateLocation = glGetAttribLocation(programID, "in_textureCoordinate");
 
-  const std::size_t textureUVData_in_bytes = std::size(textureUVData) * sizeof(decltype(textureUVData[0]));
-  glNamedBufferStorage(textureCoordinatesID, textureUVData_in_bytes, std::data(textureUVData), GL_MAP_READ_BIT);
+  glNamedBufferStorage(textureCoordinatesID, std::size(textureUVData) * vec2::sizeInBytes, std::data(textureUVData), GL_MAP_READ_BIT);
 
-  glVertexArrayVertexBuffer(vertexAttributeArrayID, textureCoordinateLocation, textureCoordinatesID, 0, sizeof(decltype(textureUVData[0])));
-  glVertexArrayAttribFormat(vertexAttributeArrayID, textureCoordinateLocation, vec2::count, GL_FLOAT, GL_FALSE, 0);
+  glVertexArrayVertexBuffer(vertexAttributeArrayID, textureCoordinateLocation, textureCoordinatesID, 0, vec2::sizeInBytes);
+  glVertexArrayAttribFormat(vertexAttributeArrayID, textureCoordinateLocation, vec2::componentCount, vec2::componentType, GL_FALSE, 0);
+
   glVertexArrayAttribBinding(vertexAttributeArrayID, textureCoordinateLocation, textureCoordinateLocation);
-
   glEnableVertexArrayAttrib(vertexAttributeArrayID, textureCoordinateLocation);
 
   GLuint elementArrayBufferID;
