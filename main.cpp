@@ -151,7 +151,6 @@ void main() {
 
   GLuint woodTextureID;
   glCreateTextures(GL_TEXTURE_2D, 1, &woodTextureID);
-  glBindTexture(GL_TEXTURE_2D, woodTextureID);
 
   int width, height, nComponents;
   stbi_uc* image_data0 = stbi_load("resources/textures/wood.jpg", &width, &height, &nComponents, 0);
@@ -162,7 +161,6 @@ void main() {
 
   GLuint skyTextureID;
   glCreateTextures(GL_TEXTURE_2D, 1, &skyTextureID);
-  glBindTexture(GL_TEXTURE_2D, skyTextureID);
 
   stbi_uc* image_data1 = stbi_load("resources/textures/sky.jpg", &width, &height, &nComponents, 0);
   assert(image_data1 != nullptr);
