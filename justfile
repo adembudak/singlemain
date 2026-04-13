@@ -8,6 +8,10 @@ alias b := build
 build buildDir = buildDir:
   cmake --build {{buildDir}} --clean-first
 
+alias i := install
+install buildDir = buildDir:
+  cmake --install {{buildDir}}
+
 run buildDir = buildDir:
   cmake --build {{buildDir}}
   ./{{buildDir}}/pot
