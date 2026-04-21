@@ -93,8 +93,8 @@ void main() {
   const char* fragment_shader = R"(
 #version 460 core
 
-layout(binding = 0) uniform sampler2D sampler0;
-layout(binding = 1) uniform sampler2D sampler1;
+uniform sampler2D sampler0;
+uniform sampler2D sampler1;
 
 in vec2 textureCoordinate;
 out vec4 fragmentColor;
@@ -126,6 +126,9 @@ void main() {
   glDetachShader(programID, fragmentShaderID);
 
   glUseProgram(programID);
+
+  GLuint samplerLocation0 = glGetUniformLocation(programID, "sampler0");
+  GLuint samplerLocation1 = glGetUniformLocation(programID, "sampler1");
 
   GLuint vertexAttributeArrayID;
   glCreateVertexArrays(1, &vertexAttributeArrayID);
@@ -196,8 +199,8 @@ void main() {
   while(!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glBindTextureUnit(0, woodTextureID);
-    glBindTextureUnit(1, skyTextureID);
+    glBindTextureUnit(samplerLocation0, woodTextureID);
+    glBindTextureUnit(samplerLocation1, skyTextureID);
 
     glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
 
